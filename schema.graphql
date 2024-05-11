@@ -1,0 +1,1057 @@
+# instrument condition
+enum Condition {
+    NORMAL
+    FROZEN
+    RESOLVED
+}
+
+enum FeederType {
+    NONE_STABLE
+    QUOTE_STABLE
+    BASE_STABLE
+    BOTH_STABLE
+}
+
+# amm status
+enum Status {
+    DORMANT
+    TRADING
+    SETTLING
+    SETTLED
+}
+
+# order status
+enum OrderStatus {
+    OPEN
+    FILLED
+    CANCELLED
+}
+
+# range status
+enum RangeStatus {
+    OPEN
+    REMOVED
+}
+
+enum PendingStatus {
+    PENDING
+    RELEASED
+}
+
+enum QuoteType {
+    INVALID
+    STABLE
+    NONSTABLE
+}
+
+enum VirtualTradeType {
+    MARKET
+    LIMIT
+    RANGE
+    LIQUIDATION
+    TAKE_OVER
+}
+
+type Base @entity {
+    id: ID!                         # symbol(Cex) or address(DEXV2)
+
+    name: String
+    symbol: String!
+    decimals: BigInt
+}
+
+type Quote @entity {
+    id: ID!                         # quote address, must be a ERC20 token
+
+    name: String!
+    symbol: String!
+    decimals: BigInt!
+
+    param: [QuoteParam!] @derivedFrom(field: "quote")
+}
+
+# global quote param
+type QuoteParam @entity {
+    id: ID!                         # quote addr
+
+    quote: Quote!
+
+    minMarginAmount: BigInt!
+
+    tradingFeeRatio: BigInt!
+    protocolFeeRatio: BigInt!
+    stabilityFeeRatioParam: BigInt!
+    qtype: QuoteType!
+
+    tip: BigInt!
+}
+
+# Instrument setting 
+type InstrumentSetting @entity {
+    id: ID!                         # ${instrumentId}
+
+    instrument: Instrument!
+
+    quote: Quote!
+
+    initialMarginRatio: Int!
+    maintenanceMarginRatio: Int!
+
+    minMarginAmount: BigInt!
+    tradingFeeRatio: BigInt!
+    protocolFeeRatio: BigInt!
+    stabilityFeeRatioParam: BigInt!
+    qtype: QuoteType!
+
+    tip: BigInt!
+}
+
+type CexMarket @entity {
+    id: ID!                         # market address
+    type: String!
+    beacon: Bytes!
+
+    compactEmaParam: BigInt        # compact ema param
+    feederList: [CexFeeder!] @derivedFrom(field: "market")
+    instrumentList: [Instrument!] @derivedFrom(field: "cexMarket")
+}
+
+type DexV2Market @entity {
+    id: ID!                         # market address
+    type: String!
+    beacon: Bytes!
+
+    compactEmaParam: BigInt        # compact ema param
+    feederList: [DexV2Feeder!] @derivedFrom(field: "market")
+    instrumentList: [Instrument!] @derivedFrom(field: "dexV2Market")
+}
+
+# cex feeder info belongs to a instrument
+type CexFeeder @entity {
+    id: ID!                         # instrument address
+    market: CexMarket!
+    feederType: FeederType!
+
+    aggregator0: Bytes!
+    scaler0: BigInt!
+    heartBeat0: Int!
+
+    aggregator1: Bytes
+    scaler1: BigInt!
+    heartBeat1: Int!
+}
+
+# dex v2 feeder info belongs to a instrument
+type DexV2Feeder @entity {
+    id: ID!                         # instrument address
+    market: DexV2Market!
+    feederType: FeederType!
+
+    scaler0: BigInt!
+    scaler1: BigInt
+    isToken0Quote: Boolean
+    pair: Bytes!
+}
+
+type Instrument @entity {
+    id: ID!                         # instrument address
+    symbol: String!
+    base: Base!
+    quote: Quote!
+    setting: InstrumentSetting!
+    createdAt: BigInt!              # created timestamp
+
+    condition: Condition!
+
+    marketType: String!
+
+    cexMarket: CexMarket
+    cexFeeder: CexFeeder
+
+    dexV2Market: DexV2Market
+    dexV2Feeder: DexV2Feeder
+
+    ammList: [Amm!] @derivedFrom(field: "instrument")
+}
+
+type Amm @entity {
+    id: ID!                         # amm id: (${instrument address}-${expiry})
+    symbol: String!                 # symbol
+    instrument: Instrument!         # instrument
+    expiry: BigInt!                 # expiry timestamp
+
+    createdAt: BigInt!              # created timestamp
+    sqrtInitialPX96: BigInt!        # initial price for first adding liquidity
+
+    sqrtPX96: BigInt!               # current price
+    balance: BigInt!                # amm's balance of quote, add/sub by addRange/removeRange
+    data: AmmData
+    dailyDataList: [DailyAmmData!] @derivedFrom(field: "amm")
+    hourlyDataList: [HourlyAmmData!] @derivedFrom(field: "amm")
+    per4HourDataList: [Per4HourAmmData!] @derivedFrom(field: "amm")
+
+    timestamp: BigInt!
+
+    status: Status!
+
+    feeIndex: BigInt!
+    protocolFee: BigInt!
+
+    longSocialLossIndex: BigInt!
+    shortSocialLossIndex: BigInt!
+
+    longFundingIndex: BigInt!
+    shortFundingIndex: BigInt!
+
+    insuranceFund: BigInt!
+
+    settlementPrice: BigInt!
+}
+
+type User @entity {
+    id: ID!                         # user address
+    createdTime: BigInt!            # register time
+}
+
+type UserVault @entity {
+    id: ID!                         # id (${user address}-${quote address})
+    quote: Quote!                   # Quote
+
+    user: User!                     # User
+
+    balance: BigInt!                # user's balance of quote
+    totalDeposit: BigInt!           # user's total deposit of quote
+    totalWithdraw: BigInt!          # user's total withdraw of quote
+}
+
+type Gate @entity {
+    id: ID!                         # gate address
+    pendingDuration: BigInt!        # Gate large amount withdraw pending duration
+    thresholds: [Threshold!] @derivedFrom(field: "gate")
+}
+
+type Threshold @entity {
+    id: ID!                         # quote address
+    gate: Gate!                    # Gate
+    quote: Bytes!                   # Quote
+    threshold: BigInt!              # Gate large amount withdraw threshold
+}
+
+type Pending @entity {
+    id: ID!                         # pending id: (${quote address}-${trader address}-${pending counter})
+    quote: Bytes!
+    trader: Bytes!
+
+    timestamp: BigInt!
+    native: Boolean!
+    amount: BigInt!
+    exemption: BigInt!
+    status: PendingStatus!
+}
+
+type PendingIdCounter @entity {
+    id: ID!                         # id: (${quote address}-${trader address})
+
+    counter: BigInt!                # latest counter, increase one if new order is created
+}
+
+type Position @entity {
+    id: ID!                         # position id: (${trader}-${amm id})
+    amm: Amm!
+    trader: Bytes!
+
+    balance: BigInt!
+    size: BigInt!
+    entryNotional: BigInt!
+    entrySocialLossIndex: BigInt!
+    entryFundingIndex: BigInt!
+}
+
+type Order @entity {
+    id: ID!                         # order id: (${trader}-${amm id}-${tick}-${nonce}-${counter})
+    amm: Amm!
+    trader: Bytes!
+
+    tick: Int!
+    nonce: BigInt!
+    balance: BigInt!
+    size: BigInt!
+    filledSize: BigInt!
+    tradeValue: BigInt!
+    price: BigInt!
+    createdTimestamp: BigInt!
+    timestamp: BigInt!              # last updated timestamp
+    fee: BigInt!
+    status: OrderStatus!
+
+    placeEvent: PlaceEvent!
+    fillEvent: FillEvent
+    cancelEvent: CancelEvent
+
+    referralCode: String
+}
+
+type OrderIdCounter @entity {
+    id: ID!                         # id: (${trader}-${amm id}-${tick}-${nonce})
+
+    counter: BigInt!                # latest counter, increase one if new order is created
+}
+
+
+type RangeIdCounter @entity {
+    id: ID!                         # id: ${trader}-${amm id}-${tickLower}-${tickUpper})
+
+    counter: BigInt!                # latest counter, increase one if new range is created
+}
+
+
+type Range @entity {
+    id: ID!                         # range id: (${trader}-${amm id}-${tickLower}-${tickUpper}-${counter})
+    amm: Amm!
+    trader: Bytes!
+
+    status: RangeStatus!
+
+    tickLower: Int!
+    tickUpper: Int!
+
+    liquidity: BigInt!
+    balance: BigInt!
+    sqrtEntryPX96: BigInt!
+    entryFeeIndex: BigInt!
+}
+
+type GlobalStatsData @entity {
+    id: ID!                         # ZERO address
+    totalUsers: BigInt!
+    totalInstruments: BigInt!
+    totalAmms: BigInt!
+    totalTxCount: BigInt!
+    totalLiquidityCount: BigInt!
+    totalDepositCount: BigInt!
+    totalWithdrawCount: BigInt!
+    totalTradeCount: BigInt!
+    totalLiquidationCount: BigInt!    # event count of liquidated by amm or taken over by liquidator
+}
+
+type DailyGlobalStatsData @entity {
+    id: ID!                         # ${ZERO_ADDRESS}-${timestamp}
+    timestamp: BigInt!              # timestamp rounded to current day
+
+    totalUsers: BigInt!
+    totalInstruments: BigInt!
+    totalAmms: BigInt!
+    totalTxCount: BigInt!
+    totalLiquidityCount: BigInt!
+    totalDepositCount: BigInt!
+    totalWithdrawCount: BigInt!
+    totalTradeCount: BigInt!
+    totalLiquidationCount: BigInt!    # event count of liquidated by amm or taken over by liquidator
+}
+
+type InstrumentData @entity {
+    id: ID!
+
+    instrument: Instrument!
+
+    totalUsers: BigInt!             # total count of users
+    totalAmms: BigInt!              # total count of amms
+    totalBaseVolume: BigInt!        # sum of base volume
+    totalVolume: BigInt!            # sum of quote volume
+    totalValueLocked: BigInt!       # totalValueLocked
+    totalPoolFee: BigInt!           # accumulated pool fee
+    totalLiquidityFee: BigInt!      # accumulated liquidity fee
+    totalProtocolFee: BigInt!       # accumulated protocol fee
+}
+
+type DailyInstrumentData @entity {
+    id: ID!                         # ${instrumentId}-${timestamp}
+    timestamp: BigInt!              # timestamp rounded to current day
+
+    instrument: Instrument!
+
+    baseVolume: BigInt!             # daily base volume
+    volume: BigInt!                 # daily volume
+    valueLocked: BigInt!            # daily value locked
+    poolFee: BigInt!                # daily pool fee
+    liquidityFee: BigInt!           # daily liquidity fee
+    protocolFee: BigInt!            # hourly protocol fee
+
+    totalBaseVolume: BigInt!        # accumulated total base volume
+    totalVolume: BigInt!            # accumulated total volume
+    totalValueLocked: BigInt!       # accumulated value locked
+    totalPoolFee: BigInt!           # accumulated pool fee
+    totalLiquidityFee: BigInt!      # accumulated liquidity fee
+    totalProtocolFee: BigInt!       # accumulated protocol fee
+}
+
+# accumulated quote data of all time
+type QuoteData @entity {
+    id: ID!
+
+    quote: Quote!
+
+    totalVolume: BigInt!            # sum of trade/liquidate volume
+    totalValueLocked: BigInt!       # total value locked
+    totalPoolFee: BigInt!           # accumulated pool fee
+    totalLiquidityFee: BigInt!      # accumulated liquidity fee
+    totalProtocolFee: BigInt!       # accumulated protocol fee
+}
+
+# QuoteDataPerDay
+type DailyQuoteData @entity {
+    id: ID!                         # ${quoteId}-${timestamp}
+    timestamp: BigInt!              # timestamp rounded to current day
+
+    quote: Quote!
+
+    volume: BigInt!                 # daily volume
+    valueLocked: BigInt!            # daily value locked
+    poolFee: BigInt!                # daily pool fee
+    liquidityFee: BigInt!           # daily liquidity fee
+    protocolFee: BigInt!            # daily protocol fee
+
+    totalVolume: BigInt!            # accumulated volume
+    totalValueLocked: BigInt!       # accumulated value locked
+    totalPoolFee: BigInt!           # accumulated pool fee
+    totalLiquidityFee: BigInt!      # accumulated liquidity fee
+    totalProtocolFee: BigInt!       # accumulated protocol fee
+}
+
+type AmmData @entity {
+    id: ID!                         # ammId
+
+    amm: Amm!
+
+    totalBaseVolume: BigInt!        # accumulated total base volume
+    totalVolume: BigInt!            # accumulated total volume
+    totalPoolFee: BigInt!           # accumulated pool fee
+    totalLiquidityFee: BigInt!      # accumulated liquidity fee
+    totalProtocolFee: BigInt!       # accumulated protocol fee
+    totalValueLocked: BigInt!       # accumulated total value locked
+}
+
+type DailyAmmData @entity {
+    id: ID!
+    timestamp: BigInt!              # timestamp rounded to current day
+    amm: Amm!
+
+    baseVolume: BigInt!             # daily base volume
+    volume: BigInt!                 # daily volume
+    poolFee: BigInt!                # daily pool fee
+    liquidityFee: BigInt!           # daily liquidity fee    
+    protocolFee: BigInt!            # daily protocol fee
+
+    open: BigInt!                   # OHLC
+    close: BigInt!
+    high: BigInt!
+    low: BigInt!
+
+    totalValueLocked: BigInt!       # total value locked to the day
+    totalBaseVolume: BigInt!        # accumulated total base volume
+    totalVolume: BigInt!            # accumulated total volume
+    totalPoolFee: BigInt!           # accumulated pool fee
+    totalLiquidityFee: BigInt!      # accumulated liquidity fee
+    totalProtocolFee: BigInt!       # accumulated protocol fee
+}
+
+type HourlyAmmData @entity {
+    id: ID!
+    timestamp: BigInt!              # unix timestamp for start of hour
+    amm: Amm!
+
+    baseVolume: BigInt!             # hourly base volume
+    volume: BigInt!                 # hourly volume
+    poolFee: BigInt!                # hourly pool fee
+    liquidityFee: BigInt!           # hourly liquidity fee    
+    protocolFee: BigInt!            # hourly protocol fee
+
+    open: BigInt!                   # OHLC
+    close: BigInt!
+    high: BigInt!
+    low: BigInt!
+
+    firstFundingIndex: BigInt!      # funding index at the start of the hour
+    lastFundingIndex: BigInt!       # funding index at the end of the hour
+    firstMarkPrice: BigInt!         # mark price at the start of the hour
+    lastMarkPrice: BigInt!          # mark price at the end of the hour
+}
+
+type WeeklyAmmData @entity {
+    id: ID!
+    timestamp: BigInt!              # unix timestamp for start of week
+    amm: Amm!
+
+    baseVolume: BigInt!             # weekly base volume
+    volume: BigInt!                 # weekly volume
+    poolFee: BigInt!                # weekly pool fee
+    liquidityFee: BigInt!           # weekly liquidity fee
+    protocolFee: BigInt!            # weekly protocol fee
+
+    open: BigInt!                   # OHLC
+    close: BigInt!
+    high: BigInt!
+    low: BigInt!
+}
+
+type Per4HourAmmData @entity {
+    id: ID!
+    timestamp: BigInt!              # unix timestamp for start of hour
+    amm: Amm!
+
+    baseVolume: BigInt!             # hourly base volume
+    volume: BigInt!                 # hourly volume
+    poolFee: BigInt!                # hourly pool fee
+    liquidityFee: BigInt!           # hourly liquidity fee
+    protocolFee: BigInt!            # hourly protocol fee
+
+    open: BigInt!                   # OHLC
+    close: BigInt!
+    high: BigInt!
+    low: BigInt!
+}
+
+
+type UserData @entity {
+    id: ID!                       # user address
+    user: User!                   # user
+    txCount: BigInt!              # total transaction count
+    tradeCount: BigInt!           # trade event count
+    depositCount: BigInt!         # deposit event count
+    withdrawCount: BigInt!        # withdraw event count
+    liquidityCount: BigInt!       # update liquidity event count
+    liquidationCount: BigInt!     # liquidate/sweep event count
+}
+
+type UserQuoteData @entity {
+    id: ID!                       # ${userAddr}-${quoteId}
+    user: User!                   # user
+    quote: Quote!                 # quote
+    volume: BigInt!               # volume
+}
+
+type DailyUserQuoteData @entity {
+    id: ID!                       # ${userAddr}-${quoteId}-${timestamp}
+    timestamp: BigInt!            # timestamp rounded to current day
+    user: User!                   # user
+    quote: Quote!                 # quote
+    volume: BigInt!               # volume
+}
+
+type VirtualTrade @entity {
+    id: ID!                         # transactionHash-logIndex-${type} 
+    trader: Bytes!
+    amm: Amm!
+    timestamp: BigInt!
+    blockNumber: BigInt!
+
+    size: BigInt!
+    price: BigInt!
+    tradeValue: BigInt!
+    fee: BigInt!
+    type: VirtualTradeType!
+    realizedPnl: BigInt!
+
+    referralCode: String
+
+    original: TransactionEvent!
+}
+
+type Transaction @entity {
+    id: ID!                         # tx-id
+
+    blockNumber: BigInt!
+    timestamp: BigInt!
+    index: BigInt!                  # transaction index in the corresponding block
+
+    from: Bytes!
+    to: Bytes!
+    value: BigInt!
+    gasUsed: BigInt!
+    gasPrice: BigInt!
+    input: Bytes
+
+    instrumentList: [Instrument!]         # One transaction could contain multiple instrument
+
+    events: [TransactionEvent!] @derivedFrom(field: "transaction")
+}
+
+type TransactionEvent @entity {
+    id: ID!                         # txHash-logIndex
+    address: Bytes!                 # event address
+    transaction: Transaction!       # txHash
+    logIndex: Int!                  # logIndex
+    blockNumber: BigInt!
+    timestamp: BigInt!
+
+    instrument: Instrument
+    amm: Amm
+    trader: Bytes                   # trader address
+    liquidator: Bytes               # liquidator address
+
+    name: String!                   # event name
+    args: String!                   # args in json string
+}
+
+# event NewInstrument(bytes32 index, address instrument, address base, address quote, string symbol)
+type NewInstrumentEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    index: Bytes!
+    instrument: Bytes!
+    base: Bytes!
+    quote: Bytes!
+    symbol: String!
+}
+
+# event Deposit(address indexed quote, address indexed trader, uint amount);
+type DepositEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    quote: Bytes!
+    trader: Bytes!
+    quantity: BigInt!
+}
+
+# event Withdraw(address indexed quote, address indexed trader, uint amount);
+type WithdrawEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    quote: Bytes!
+    trader: Bytes!
+    quantity: BigInt!
+}
+
+# event Scatter(address indexed quote, address indexed trader, address indexed instrument, uint32 expiry, uint quantity);
+type ScatterEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    quote: Bytes!
+    trader: Bytes!
+    instrument: Bytes!
+    expiry: BigInt!
+    quantity: BigInt!
+}
+
+# event Gather(address indexed quote, address indexed trader, address indexed instrument, uint32 expiry, uint quantity);
+type GatherEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    quote: Bytes!
+    trader: Bytes!
+    instrument: Bytes!
+    expiry: BigInt!
+    quantity: BigInt!
+}
+
+# event SetPendingDuration(uint duration);
+type SetPendingDurationEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    duration: BigInt!
+}
+
+# event SetThreshold(address indexed quote, uint threshold);
+type SetThresholdEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    quote: Bytes!
+    threshold: BigInt!
+}
+
+# event UpdatePending(address indexed quote, address indexed trader, Pending pending);
+type UpdatePendingEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    quote: Bytes!
+    trader: Bytes!
+    timestamp: BigInt!              # pending timestamp
+    native: Boolean!                # pending withdraw native token or not
+    amount: BigInt!                 # pending amount
+    exemption: BigInt! # pending accumulated threshold adjustment
+}
+
+# event UpdateCondition(uint32 timestamp, Condition condition)
+type UpdateConditionEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    timestamp: BigInt!
+    condition: Int!
+}
+
+# event DonateInsuranceFund(uint32 indexed expiry, address indexed donator, uint amount);
+type DonateInsuranceFundEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    donator: Bytes!
+    amount: BigInt!
+}
+
+# event RecycleInsuranceFund(uint32 indexed expiry, uint amount);
+type RecycleInsuranceFundEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    amount: BigInt!
+}
+
+# event ClaimProtocolFee(uint32 indexed expiry, uint amount);
+type ClaimProtocolFeeEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    amount: BigInt!
+}
+
+# event Trade(uint32 indexed expiry, address indexed trader, int size, uint amount, int totalTaken, uint entryNotional, uint16 feeRatio, uint mark);
+type TradeEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    size: BigInt!
+    amount: BigInt!
+    takenSize: BigInt!
+    takenValue: BigInt!
+    entryNotional: BigInt!
+    feeRatio: BigInt!
+    mark: BigInt!
+    sqrtPX96: BigInt!
+
+    referralCode: String
+}
+
+# event Sweep(uint32 indexed expiry, address indexed trader, int size, int totalTaken, uint entryNotional, uint16 feeRatio, uint mark, address operator);
+type SweepEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    size: BigInt!
+    takenSize: BigInt!
+    takenValue: BigInt!
+    entryNotional: BigInt!
+    feeRatio: BigInt!
+    mark: BigInt!
+    operator: Bytes!
+    sqrtPX96: BigInt!
+}
+
+# event Adjust(uint32 indexed expiry, address indexed trader, int amount);
+type AdjustEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    net: BigInt!
+}
+
+# event Add(uint32 indexed expiry, address indexed trader, int32 tickLower, int32 tickUpper, Range range);
+type AddEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    tickLower: Int!
+    tickUpper: Int!
+
+    liquidity: BigInt!
+    balance: BigInt!
+    sqrtEntryPX96: BigInt!
+    entryFeeIndex: BigInt!
+
+    referralCode: String
+}
+
+# event Remove(uint32 indexed expiry, address indexed trader, int32 tickLower, int32 tickUpper, uint fee, PositionCache pic, address operator, uint tip);
+type RemoveEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    tickLower: Int!
+    tickUpper: Int!
+    fee: BigInt!
+    tip: BigInt!
+    operator: Bytes!
+
+    balance: BigInt!
+    size: BigInt!
+    entryNotional: BigInt!
+    entrySocialLossIndex: BigInt!
+    entryFundingIndex: BigInt!
+
+    mark: BigInt!
+    unrealizedPnl: BigInt!
+}
+
+# event Place(uint32 indexed expiry, address indexed trader, int32 tick, uint32 nonce, Order order);
+type PlaceEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    tick: Int!
+    nonce: BigInt!
+
+    balance: BigInt!
+    size: BigInt!
+
+    referralCode: String
+}
+
+# event Cancel(uint32 indexed expiry, address indexed trader, int32 tick, uint32 nonce, PositionCache pic);
+type CancelEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    tick: Int!
+    nonce: BigInt!
+    fee: BigInt!
+
+    balance: BigInt!
+    size: BigInt!
+    entryNotional: BigInt!
+    entrySocialLossIndex: BigInt!
+    entryFundingIndex: BigInt!
+}
+
+# event Fill(uint32 indexed expiry, address indexed trader, int32 tick, uint32 nonce, uint fee, PositionCache pic,address operator, uint tip);
+type FillEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    tick: Int!
+    nonce: BigInt!
+    fee: BigInt!
+    tip: BigInt!
+    operator: Bytes!
+
+    balance: BigInt!
+    size: BigInt!
+    entryNotional: BigInt!
+    entrySocialLossIndex: BigInt!
+    entryFundingIndex: BigInt!
+}
+
+# event Liquidate(uint32 indexed expiry, address indexed trader, uint amount, uint mark, address target, int size);
+type LiquidateEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    amount: BigInt!
+    mark: BigInt!
+    target: Bytes!
+    size: BigInt!
+}
+
+# event Settle(uint32 indexed expiry, address indexed trader, uint settlement, uint balance, address operator);
+type SettleEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+    settlement: BigInt!
+    balance: BigInt!
+    operator: Bytes!
+}
+
+# event FundingFee(address indexed trader, int funding);
+type FundingFeeEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    trader: Bytes!
+    funding: BigInt!
+}
+
+# event UpdatePosition(uint32 indexed expiry, address indexed trader, PositionCache pic);
+type UpdatePositionEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    trader: Bytes!
+
+    balance: BigInt!
+    size: BigInt!
+    entryNotional: BigInt!
+    entrySocialLossIndex: BigInt!
+    entryFundingIndex: BigInt!
+}
+
+
+#  event UpdateAmmStatus(uint32 indexed expiry, Status status, uint mark)
+type UpdateAmmStatusEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    status: Int!
+    mark: BigInt!
+    sqrtPX96: BigInt!
+}
+
+# event UpdateFeeState(uint32 indexed expiry, uint128 protocolFee, uint128 feeIndex);
+type UpdateFeeStateEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    protocolFee: BigInt!
+    feeIndex: BigInt!
+}
+
+#event UpdateSocialLossInsuranceFund(uint32 indexed expiry, uint128 longSocialLossIndex, uint128 shortSocialLossIndex, uint128 insuranceFund);
+type UpdateSocialLossInsuranceFundEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    expiry: BigInt!
+    longSocialLossIndex: BigInt!
+    shortSocialLossIndex: BigInt!
+    insuranceFund: BigInt!
+}
+
+# perpetual only, fundingIndex = (shortFundingIndex << 128) | longFundingIndex
+# event UpdateFundingIndex(uint fundingIndex);
+type UpdateFundingIndexEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    fundingIndex: BigInt!
+    longFundingIndex: BigInt!
+    shortFundingIndex: BigInt!
+}
+
+# event UpdateMarginRatio(uint16 initialMarginRatio, uint16 maintenanceMarginRatio)
+type UpdateMarginRatioEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    initialMarginRatio: Int!
+    maintenanceMarginRatio: Int!
+}
+
+# event UpdateParam(QuoteParam param);
+type UpdateParamEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+
+    quote: Quote!
+
+    minMarginAmount: BigInt!
+    tradingFeeRatio: BigInt!
+    protocolFeeRatio: BigInt!
+    stabilityFeeRatioParam: BigInt!
+    qtype: QuoteType!
+
+    tip: BigInt!
+}
+
+# event DeleteContext(uint32 indexed expiry); 
+type DeleteContextEvent @entity {
+    id: ID!                         # txid-logIndex
+    logIndex: Int!
+    transaction: Transaction!
+    address: Bytes!
+    expiry: BigInt!
+}
+
+# config contract
+type Config @entity {
+    id: ID!                      # zero address
+    address: Bytes!              # config contract address
+}
+
+type AccessControlContractRole @entity {
+    id: ID!                      # contract address
+    admins: [Bytes!]!            # admin address list
+    operators: [Bytes!]!         # operator address list
+}

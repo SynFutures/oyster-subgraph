@@ -1,0 +1,252 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Config
+    network: {{network}}
+    source:
+      address: '{{config}}'
+      abi: Config
+      startBlock: {{configStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Config
+      abis:
+        - name: Config
+          file: ./abis/Config.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: DexV2Market
+          file: ./abis/DexV2Market.json
+        - name: CexMarket
+          file: ./abis/CexMarket.json     
+      eventHandlers:
+        - event: SetMarketInfo(string,address,address)
+          handler: handleSetMarketInfo
+        - event: SetQuoteParam(address,(uint128,uint16,uint16,uint64,uint8,uint128))
+          handler: handleSetQuoteParam
+      file: ./src/mappings/config.ts
+  - kind: ethereum
+    name: Gate
+    network: {{network}}
+    source:
+      address: '{{gate}}'
+      abi: Gate
+      startBlock: {{gateStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Gate
+      abis:
+        - name: Gate
+          file: ./abis/Gate.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: Config
+          file: ./abis/Config.json
+      eventHandlers:
+        - event: NewInstrument(bytes32,address,address,address,string,uint256)
+          handler: handleNewInstrument      
+        - event: Gather(indexed address,indexed address,indexed address,uint32,uint256)
+          handler: handleGather
+        - event: Scatter(indexed address,indexed address,indexed address,uint32,uint256)
+          handler: handleScatter      
+        - event: Deposit(indexed address,indexed address,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,uint256)
+          handler: handleWithdraw
+        - event: SetPendingDuration(uint256)
+          handler: handleSetPendingDuration
+        - event: SetThreshold(indexed address,uint256)
+          handler: handleSetThreshold
+        - event: UpdatePending(indexed address,indexed address,(uint32,bool,uint96,uint120))
+          handler: handleUpdatePending
+      file: ./src/mappings/gate.ts
+  - kind: ethereum
+    name: AccessControlGuardian
+    network: {{network}}
+    source:
+      address: '{{guardian}}'
+      abi: AccessControl
+      startBlock: {{guardianStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AccessControlContractRole
+      abis:
+        - name: AccessControl
+          file: ./abis/AccessControl.json
+      eventHandlers:
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: ./src/mappings/accessControl.ts
+  - kind: ethereum
+    name: AccessControlEmgeringFeederFactory
+    network: {{network}}
+    source:
+      address: '{{emg}}'
+      abi: AccessControl
+      startBlock: {{emgStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AccessControlContractRole
+      abis:
+        - name: AccessControl
+          file: ./abis/AccessControl.json
+      eventHandlers:
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: ./src/mappings/accessControl.ts
+  - kind: ethereum
+    name: AccessControlPythFeederFactory
+    network: {{network}}
+    source:
+      address: '{{pyth}}'
+      abi: AccessControl
+      startBlock: {{pythStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AccessControlContractRole
+      abis:
+        - name: AccessControl
+          file: ./abis/AccessControl.json
+      eventHandlers:
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: ./src/mappings/accessControl.ts
+templates:
+  - kind: ethereum
+    name: InstrumentContract
+    network: {{network}}
+    source:
+      abi: Instrument
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mappings/instrument.ts
+      entities:
+        - Instrument
+        - Amm
+      abis:
+        - name: Instrument
+          file: ./abis/Instrument.json
+        - name: Config
+          file: ./abis/Config.json
+        - name: CexMarket
+          file: ./abis/CexMarket.json
+        - name: DexV2Market
+          file: ./abis/DexV2Market.json
+      eventHandlers:
+        - event: Add(indexed uint32,indexed address,int24,int24,(uint128,uint128,uint96,uint160))
+          handler: handleAdd
+        - event: Adjust(indexed uint32,indexed address,int256)
+          handler: handleAdjust
+        - event: Cancel(indexed uint32,indexed address,int24,uint32,uint256,(int256,int256,uint256,uint256,int256))
+          handler: handleCancel
+        - event: ClaimProtocolFee(indexed uint32,uint256)
+          handler: handleClaimProtocolFee
+        - event: DeleteContext(indexed uint32)
+          handler: handleDeleteContext
+        - event: DonateInsuranceFund(indexed uint32,indexed address,uint256)
+          handler: handleDonateInsuranceFund
+        - event: Fill(indexed uint32,indexed address,int24,uint32,uint256,(int256,int256,uint256,uint256,int256),address,uint256)
+          handler: handleFill
+        - event: FundingFee(indexed address,int256)
+          handler: handleFundingFee
+        - event: Liquidate(indexed uint32,indexed address,uint256,uint256,address,int256)
+          handler: handleLiquidate
+        - event: Place(indexed uint32,indexed address,int24,uint32,(uint128,int128))
+          handler: handlePlace           
+        - event: RecycleInsuranceFund(indexed uint32,uint256)
+          handler: handleRecycleInsuranceFund
+        - event: Remove(indexed uint32,indexed address,int24,int24,uint256,(int256,int256,uint256,uint256,int256),address,uint256)
+          handler: handleRemove
+        - event: Settle(indexed uint32,indexed address,uint256,uint256,address)
+          handler: handleSettle
+        - event: Sweep(indexed uint32,indexed address,int256,int256,uint256,uint256,uint16,uint160,uint256,address)
+          handler: handleSweep
+        - event: Trade(indexed uint32,indexed address,int256,uint256,int256,uint256,uint256,uint16,uint160,uint256)
+          handler: handleTrade
+        - event: UpdateAmmStatus(indexed uint32,uint8,uint160,uint256)
+          handler: handleUpdateAmmStatus
+        - event: UpdateCondition(uint32,uint8)
+          handler: handleUpdateCondition
+        - event: UpdateFeeState(indexed uint32,uint128,uint128)
+          handler: handleUpdateFeeState
+        - event: UpdateFundingIndex(uint256)
+          handler: handleUpdateFundingIndex
+        - event: UpdateMarginRatio(uint16,uint16)
+          handler: handleUpdateMarginRatio
+        - event: UpdateParam((uint128,uint16,uint16,uint64,uint8,uint128))
+          handler: handleUpdateParam
+        - event: UpdatePosition(indexed uint32,indexed address,(int256,int256,uint256,uint256,int256))
+          handler: handleUpdatePosition
+        - event: UpdateSocialLossInsuranceFund(indexed uint32,uint128,uint128,uint128)
+          handler: handleUpdateSocialLossInsuranceFund
+  - kind: ethereum
+    name: DexV2MarketContract
+    network: {{network}}
+    source:
+      abi: DexV2Market
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mappings/dexV2Market.ts      
+      entities:
+        - DexV2Market
+        - DexV2Feeder
+      abis:
+        - name: DexV2Market
+          file: ./abis/DexV2Market.json
+        - name: Config
+          file: ./abis/Config.json
+      eventHandlers:
+        - event: SetFeeder(indexed address,(uint8,bool,address,uint64,uint64))
+          handler: handleSetDexV2Feeder
+        - event: SetCompactEmaParam(uint256)
+          handler: handleSetCompactEmaParam
+  - kind: ethereum
+    name: CexMarketContract
+    network: {{network}}
+    source:
+      abi: CexMarket
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - CexMarket
+        - CexFeeder
+      abis:
+        - name: CexMarket
+          file: ./abis/CexMarket.json
+        - name: Config
+          file: ./abis/Config.json
+      eventHandlers:
+        - event: SetFeeder(indexed address,(uint8,uint64,address,uint24,uint64,address,uint24))
+          handler: handleSetCexFeeder
+        - event: SetCompactEmaParam(uint256)
+          handler: handleSetCompactEmaParam
+      file: ./src/mappings/cexMarket.ts

@@ -1,0 +1,14 @@
+{
+  "network": "blast-mainnet",
+  "wrappedNativeToken": "0x4300000000000000000000000000000000000004",
+  "config": "0x03f2E7452095a708ff19516eDe92F757adE2816c",
+  "configStartBlock": 193838,
+  "gate": "0x6A372dBc1968f4a07cf2ce352f410962A972c257",
+  "gateStartBlock": 193838,
+  "guardian": "0xB85b77f32DBDb7e4895b288e70770C90E232C751",
+  "guardianStartBlock": 193838,
+  "emg": "0x3BC7AD40aADc425CD670F8DcAE013E7c5eee3B76",
+  "emgStartBlock": 193838,
+  "pyth": "0x4A5EF7Ba050D7988A4A78020EEAD7202E05ADc08",
+  "pythStartBlock": 193838
+}

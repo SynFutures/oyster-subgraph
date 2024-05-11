@@ -1,0 +1,12 @@
+{
+  "name": "oyster-subgraph",
+  "license": "MIT",
+  "scripts": {
+    "templatize": "mustache config/$npm_config_network.json ./template/subgraph.yaml > subgraph.yaml && mustache config/$npm_config_network.json ./template/const.mustache > src/const.ts"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.67.1",
+    "@graphprotocol/graph-ts": "0.30.0",
+    "mustache": "^4.2.0"
+  }
+}
