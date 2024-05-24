@@ -757,6 +757,8 @@ type TradeEvent @entity {
     feeRatio: BigInt!
     mark: BigInt!
     sqrtPX96: BigInt!
+    tradingFeeRatio: BigInt!
+    protocolFeeRatio: BigInt!
 
     referralCode: String
 }
@@ -776,6 +778,9 @@ type SweepEvent @entity {
     entryNotional: BigInt!
     feeRatio: BigInt!
     mark: BigInt!
+    tradingFeeRatio: BigInt!
+    protocolFeeRatio: BigInt!
+
     operator: Bytes!
     sqrtPX96: BigInt!
 }

@@ -511,3 +511,26 @@ export function getProtocolFeeRatio(instrumentAddr: Address): BigInt {
     }
     return quoteParam.protocolFeeRatio;
 }
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function getTradingFeeRatio(instrumentAddr: Address): BigInt {
+    let instrument = Instrument.load(instrumentAddr.toHexString());
+    if (instrument == null) {
+        // instrument not exists, should not happen
+        return BigInt.fromI32(10);
+    }
+    // get protocolFeeRatio from InstrumentSetting
+    let param = loadOrNewInstrumentSetting(instrumentAddr, Address.fromString(instrument.quote));
+
+    if (param != null) {
+        return param.tradingFeeRatio;
+    }
+
+    // get protocolFeeRatio from QuoteParam
+    let quoteParam = loadOrNewQuoteParam(Address.fromString(instrument.quote));
+    if (quoteParam == null) {
+        // quoteParam not exists, should not happen
+        return BigInt.fromI32(10);
+    }
+    return quoteParam.tradingFeeRatio;
+}

@@ -96,7 +96,7 @@ import { VIRTUAL_TRADE_TYPE_LIQUIDATION } from '../const';
 import { Gather, Scatter } from '../../generated/Gate/Gate';
 import { loadOrNewAmm, loadOrNewInstrument } from './instrument';
 import { r2w, wmul } from '../utils/number';
-import { getProtocolFeeRatio } from '../mappings/instrument';
+import { getProtocolFeeRatio, getTradingFeeRatio } from '../mappings/instrument';
 import { SetPendingDuration, SetThreshold, UpdatePending } from '../../generated/Gate/Gate';
 
 export function loadOrNewTransaction(event: ethereum.Event, instrument: Address | null): Transaction {
@@ -202,6 +202,24 @@ export function newTransactionEvent(
             let amm = loadOrNewAmm(instrument, expiry, event.block.timestamp);
             let fairParam = new ethereum.EventParam('sqrtPX96', ethereum.Value.fromUnsignedBigInt(amm.sqrtPX96));
             event.parameters.push(fairParam);
+        }
+
+        if (((name === 'Trade') || (name === 'Sweep')) && instrument !== null && expiry !== null) {
+            // we need to save tradeFeeRatio and protocolFeeRatio for Trade event
+            let tradingFeeRatio = getTradingFeeRatio(instrument);
+            let protocolFeeRatio = getProtocolFeeRatio(instrument);
+
+            let tradingFeeRatioParam = new ethereum.EventParam(
+                'tradingFeeRatio',
+                ethereum.Value.fromUnsignedBigInt(tradingFeeRatio),
+            );
+
+            let protocolFeeRatioParam = new ethereum.EventParam(
+                'protocolFeeRatio',
+                ethereum.Value.fromUnsignedBigInt(protocolFeeRatio),
+            );
+            event.parameters.push(tradingFeeRatioParam);
+            event.parameters.push(protocolFeeRatioParam);
         }
 
         txEvent.args = serializeParameters(event.parameters);
@@ -416,6 +434,8 @@ export function createTradeEvent(event: Trade): TradeEvent {
     newTransactionEvent(event, 'Trade', event.address, event.params.expiry);
 
     let protocolFeeRatio = getProtocolFeeRatio(event.address);
+    let tradingFeeRatio = getTradingFeeRatio(event.address);
+
     createVirtualTradeEvent(
         getTransactionEventId(event),
         event.block,
@@ -445,6 +465,9 @@ export function createTradeEvent(event: Trade): TradeEvent {
     entity.takenValue = event.params.takenValue;
     entity.sqrtPX96 = event.params.sqrtPX96;
 
+    entity.tradingFeeRatio = tradingFeeRatio;
+    entity.protocolFeeRatio = protocolFeeRatio;
+
     entity.referralCode = decodeReferralCode(event.transaction.input);
     entity.save();
     return entity;
@@ -456,6 +479,7 @@ export function createSweepEvent(event: Sweep): SweepEvent {
     newTransactionEvent(event, 'Sweep', event.address, event.params.expiry);
 
     let protocolFeeRatio = getProtocolFeeRatio(event.address);
+    let tradingFeeRatio = getTradingFeeRatio(event.address);
 
     createVirtualTradeEvent(
         getTransactionEventId(event),
@@ -485,6 +509,9 @@ export function createSweepEvent(event: Sweep): SweepEvent {
     entity.mark = event.params.mark;
     entity.operator = event.params.operator;
     entity.sqrtPX96 = event.params.sqrtPX96;
+
+    entity.tradingFeeRatio = tradingFeeRatio;
+    entity.protocolFeeRatio = protocolFeeRatio;
 
     entity.save();
     return entity;
