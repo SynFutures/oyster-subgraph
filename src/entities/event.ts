@@ -205,7 +205,7 @@ export function newTransactionEvent(
         }
 
         if (((name === 'Trade') || (name === 'Sweep')) && instrument !== null && expiry !== null) {
-            // we need to save tradeFeeRatio and protocolFeeRatio for Trade event
+            // we need to save tradeFeeRatio and protocolFeeRatio for Trade & Sweep event
             let tradingFeeRatio = getTradingFeeRatio(instrument);
             let protocolFeeRatio = getProtocolFeeRatio(instrument);
 
