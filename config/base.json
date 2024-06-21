@@ -1,0 +1,14 @@
+{
+  "network": "base-mainnet",
+  "wrappedNativeToken": "0x4200000000000000000000000000000000000006",
+  "config": "0x5eE78082B1947a8a418F1A599041D157e2c5c886",
+  "configStartBlock": 16084059,
+  "gate": "0xa49B3Fdca2Ec1Ec9DD49A754D4c8f2ae7479aA79",
+  "gateStartBlock": 16084059,
+  "guardian": "0x245bb4abB5c7f09b785E3483057C130a52FAbb7A",
+  "guardianStartBlock": 16084059,
+  "emg": "0x3af980f4a4554C4610140f1f2611DC4fF3439db2",
+  "emgStartBlock": 16084059,
+  "pyth": "0x034a4f1056A07680205B3eA493004c8ab8a08123",
+  "pythStartBlock": 16084059
+}
