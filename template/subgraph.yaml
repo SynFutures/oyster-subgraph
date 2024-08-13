@@ -204,6 +204,8 @@ templates:
           handler: handleUpdatePosition
         - event: UpdateSocialLossInsuranceFund(indexed uint32,uint128,uint128,uint128)
           handler: handleUpdateSocialLossInsuranceFund
+        - event: WithdrawRangeFee(indexed uint32,indexed address,uint48,uint256,address,(uint128,uint128,uint96,uint160))
+          handler: handleWithdrawRangeFee          
   - kind: ethereum
     name: DexV2MarketContract
     network: {{network}}

@@ -24,6 +24,7 @@ import {
     DeleteContext,
     UpdateSocialLossInsuranceFund,
     UpdateMarginRatio,
+    WithdrawRangeFee,
 } from '../../generated/templates/InstrumentContract/Instrument';
 import {
     PERP_EXPIRY,
@@ -35,6 +36,7 @@ import {
     ONE,
     ORDER_STATUS_FILLED,
     MASK_128,
+    STABILITY_FEE_CHANGE_BLOCK,
 } from '../const';
 import {
     createAddEvent,
@@ -72,6 +74,7 @@ import {
     getConditionStr,
     getQuoteTypeStr,
     getTransactionEventId,
+    parseTicks,
 } from '../utils/common';
 import { increaseRangeIdCounter, loadOrNewRange } from '../entities/range';
 import {
@@ -134,7 +137,14 @@ export function handleSweep(event: Sweep): void {
 function buildSweepDataChange(event: Sweep): StatisticsDataChange {
     let furures = loadOrNewInstrument(event.address);
 
-    let protocolFeeRatio = getProtocolFeeRatio(event.address);
+    let quoteParam = getLiteQuoteParam(event.address);
+    let protocolFeeRatio = quoteParam.protocolFeeRatio;
+    let tradingFeeRatio = quoteParam.tradingFeeRatio;
+
+    if (event.block.number.lt(STABILITY_FEE_CHANGE_BLOCK)) {
+        // stability fee goes to insurance fund after STABILITY_FEE_CHANGE_BLOCK
+        tradingFeeRatio = BigInt.fromI32(event.params.feeRatio);
+    }
 
     let dataChange = new StatisticsDataChange();
     dataChange.instrumentAddr = event.address;
@@ -146,11 +156,8 @@ function buildSweepDataChange(event: Sweep): StatisticsDataChange {
     dataChange.tradePrice = event.params.entryNotional.times(WAD).div(event.params.size.abs());
     dataChange.deltaBaseVolume = event.params.size.abs();
     dataChange.deltaVolume = event.params.entryNotional;
-    dataChange.deltaPoolFee = event.params.entryNotional
-        .minus(event.params.takenValue)
-        .times(r2w(BigInt.fromI32(event.params.feeRatio)))
-        .div(WAD);
-    dataChange.deltaLiquidityFee = event.params.entryNotional.times(r2w(BigInt.fromI32(event.params.feeRatio))).div(WAD);
+    dataChange.deltaPoolFee = event.params.entryNotional.minus(event.params.takenValue).times(r2w(tradingFeeRatio)).div(WAD);
+    dataChange.deltaLiquidityFee = event.params.entryNotional.times(r2w(tradingFeeRatio)).div(WAD);
     dataChange.deltaProtocolFee = event.params.entryNotional.times(r2w(protocolFeeRatio)).div(WAD);
     dataChange.markPrice = event.params.mark;
     return dataChange;
@@ -159,7 +166,14 @@ function buildSweepDataChange(event: Sweep): StatisticsDataChange {
 function buildTradeDataChange(event: Trade): StatisticsDataChange {
     let furures = loadOrNewInstrument(event.address);
 
-    let protocolFeeRatio = getProtocolFeeRatio(event.address);
+    let quoteParam = getLiteQuoteParam(event.address);
+    let protocolFeeRatio = quoteParam.protocolFeeRatio;
+    let tradingFeeRatio = quoteParam.tradingFeeRatio;
+
+    if (event.block.number.lt(STABILITY_FEE_CHANGE_BLOCK)) {
+        // stability fee goes to insurance fund after STABILITY_FEE_CHANGE_BLOCK
+        tradingFeeRatio = BigInt.fromI32(event.params.feeRatio);
+    }
 
     let dataChange = new StatisticsDataChange();
     dataChange.instrumentAddr = event.address;
@@ -171,11 +185,8 @@ function buildTradeDataChange(event: Trade): StatisticsDataChange {
     dataChange.tradePrice = event.params.entryNotional.times(WAD).div(event.params.size.abs());
     dataChange.deltaBaseVolume = event.params.size.abs();
     dataChange.deltaVolume = event.params.entryNotional;
-    dataChange.deltaPoolFee = event.params.entryNotional
-        .minus(event.params.takenValue)
-        .times(r2w(BigInt.fromI32(event.params.feeRatio)))
-        .div(WAD);
-    dataChange.deltaLiquidityFee = event.params.entryNotional.times(r2w(BigInt.fromI32(event.params.feeRatio))).div(WAD);
+    dataChange.deltaPoolFee = event.params.entryNotional.minus(event.params.takenValue).times(r2w(tradingFeeRatio)).div(WAD);
+    dataChange.deltaLiquidityFee = event.params.entryNotional.times(r2w(tradingFeeRatio)).div(WAD);
     dataChange.deltaProtocolFee = event.params.entryNotional.times(r2w(protocolFeeRatio)).div(WAD);
 
     dataChange.markPrice = event.params.mark;
@@ -479,6 +490,23 @@ export function handleUpdateParam(event: UpdateParam): void {
     instrumentSetting.save();
 }
 
+export function handleWithdrawRangeFee(event: WithdrawRangeFee): void {
+    let tickRange = parseTicks(event.params.rid);
+    let range = loadOrNewRange(
+        event.params.trader,
+        event.address,
+        event.params.expiry,
+        tickRange.tickLower,
+        tickRange.tickUpper,
+    );
+    range.liquidity = event.params.range.liquidity;
+    range.balance = event.params.range.balance;
+    range.sqrtEntryPX96 = event.params.range.sqrtEntryPX96;
+    range.entryFeeIndex = event.params.range.entryFeeIndex;
+    range.status = RANGE_STATUS_OPEN;
+    range.save();
+}
+
 export function handleUpdateSocialLossInsuranceFund(event: UpdateSocialLossInsuranceFund): void {
     createUpdateSocialLossInsuranceFundEvent(event);
 
@@ -489,48 +517,27 @@ export function handleUpdateSocialLossInsuranceFund(event: UpdateSocialLossInsur
     amm.save();
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function getProtocolFeeRatio(instrumentAddr: Address): BigInt {
-    let instrument = Instrument.load(instrumentAddr.toHexString());
-    if (instrument == null) {
-        // instrument not exists, should not happen
-        return BigInt.fromI32(10);
-    }
-    // get protocolFeeRatio from InstrumentSetting
-    let param = loadOrNewInstrumentSetting(instrumentAddr, Address.fromString(instrument.quote));
-
-    if (param != null) {
-        return param.protocolFeeRatio;
-    }
-
-    // get protocolFeeRatio from QuoteParam
-    let quoteParam = loadOrNewQuoteParam(Address.fromString(instrument.quote));
-    if (quoteParam == null) {
-        // quoteParam not exists, should not happen
-        return BigInt.fromI32(10);
-    }
-    return quoteParam.protocolFeeRatio;
+export class LiteQuoteParam {
+    constructor(public tradingFeeRatio: BigInt, public protocolFeeRatio: BigInt) {}
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export function getTradingFeeRatio(instrumentAddr: Address): BigInt {
+export function getLiteQuoteParam(instrumentAddr: Address): LiteQuoteParam {
     let instrument = Instrument.load(instrumentAddr.toHexString());
     if (instrument == null) {
-        // instrument not exists, should not happen
-        return BigInt.fromI32(10);
+        throw new Error('instrument not exists');
     }
     // get protocolFeeRatio from InstrumentSetting
     let param = loadOrNewInstrumentSetting(instrumentAddr, Address.fromString(instrument.quote));
 
     if (param != null) {
-        return param.tradingFeeRatio;
+        return new LiteQuoteParam(param.tradingFeeRatio, param.protocolFeeRatio);
     }
 
     // get protocolFeeRatio from QuoteParam
     let quoteParam = loadOrNewQuoteParam(Address.fromString(instrument.quote));
     if (quoteParam == null) {
-        // quoteParam not exists, should not happen
-        return BigInt.fromI32(10);
+        throw new Error('quote param not exists');
     }
-    return quoteParam.tradingFeeRatio;
+    return new LiteQuoteParam(quoteParam.tradingFeeRatio, quoteParam.protocolFeeRatio);
 }

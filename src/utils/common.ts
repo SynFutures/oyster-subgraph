@@ -11,7 +11,9 @@ import { Config } from '../../generated/schema';
 
 import {
     DEXV2,
+    MASK_24,
     MAX_INT_128,
+    MAX_INT_24,
     ONE,
     PERP_EXPIRY,
     SECONDS_PER_4HOUR,
@@ -296,6 +298,13 @@ export function asInt128(x: BigInt): BigInt {
     return x;
 }
 
+export function asInt24(x: BigInt): BigInt {
+    if (x.gt(MAX_INT_24)) {
+        x = x.minus(ONE.leftShift(24));
+    }
+    return x;
+}
+
 export function decodeReferralCode(input: Bytes): string {
     // only parse Insturment.sol `add(bytes32[2])` 7dc485ea  `place(bytes32[2])` e9544d84 `trade(bytes32[2])` 50347fcb tx
     let sig = input.toHexString().slice(2, 10).toLowerCase();
@@ -318,4 +327,13 @@ export function decodeReferralCode(input: Bytes): string {
     return decoded;
 }
 
-// console.info(formatDate());
+export class TickRange {
+    constructor(public tickLower: BigInt, public tickUpper: BigInt) {}
+}
+
+// find RangeTicks depending on key
+export function parseTicks(key: BigInt): TickRange {
+    const tickLower = asInt24(key.rightShift(24));
+    const tickUpper = asInt24(key.bitAnd(MASK_24));
+    return new TickRange(tickLower, tickUpper);
+}
