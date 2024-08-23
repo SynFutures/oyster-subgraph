@@ -10,6 +10,5 @@
   "emg": "0x3BC7AD40aADc425CD670F8DcAE013E7c5eee3B76",
   "emgStartBlock": 193838,
   "pyth": "0x4A5EF7Ba050D7988A4A78020EEAD7202E05ADc08",
-  "pythStartBlock": 193838,
-  "stabilityFeeChangeBlock": 7234469
+  "pythStartBlock": 193838
 }
