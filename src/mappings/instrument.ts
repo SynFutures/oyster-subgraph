@@ -36,7 +36,6 @@ import {
     ONE,
     ORDER_STATUS_FILLED,
     MASK_128,
-    STABILITY_FEE_CHANGE_BLOCK,
 } from '../const';
 import {
     createAddEvent,
@@ -141,11 +140,6 @@ function buildSweepDataChange(event: Sweep): StatisticsDataChange {
     let protocolFeeRatio = quoteParam.protocolFeeRatio;
     let tradingFeeRatio = quoteParam.tradingFeeRatio;
 
-    if (event.block.number.lt(STABILITY_FEE_CHANGE_BLOCK)) {
-        // stability fee goes to insurance fund after STABILITY_FEE_CHANGE_BLOCK
-        tradingFeeRatio = BigInt.fromI32(event.params.feeRatio);
-    }
-
     let dataChange = new StatisticsDataChange();
     dataChange.instrumentAddr = event.address;
     dataChange.expiry = event.params.expiry;
@@ -169,11 +163,6 @@ function buildTradeDataChange(event: Trade): StatisticsDataChange {
     let quoteParam = getLiteQuoteParam(event.address);
     let protocolFeeRatio = quoteParam.protocolFeeRatio;
     let tradingFeeRatio = quoteParam.tradingFeeRatio;
-
-    if (event.block.number.lt(STABILITY_FEE_CHANGE_BLOCK)) {
-        // stability fee goes to insurance fund after STABILITY_FEE_CHANGE_BLOCK
-        tradingFeeRatio = BigInt.fromI32(event.params.feeRatio);
-    }
 
     let dataChange = new StatisticsDataChange();
     dataChange.instrumentAddr = event.address;
