@@ -1,0 +1,14 @@
+{
+    "network": "monad-testnet",
+    "wrappedNativeToken": "0x760AfE86e5de5fa0Ee542fc7B7B713e1c5425701",
+    "config": "0x3af980f4a4554C4610140f1f2611DC4fF3439db2",
+    "configStartBlock": 5316080,
+    "gate": "0x034a4f1056A07680205B3eA493004c8ab8a08123",
+    "gateStartBlock": 5316120,
+    "guardian": "0x727B0Fe01214fdfabBa7d85FfDF83884d244B837",
+    "guardianStartBlock": 5316060,
+    "emg": "0xAaeA67DFf0DA21a0B19C67eDfD8988A82480Ef8d",
+    "emgStartBlock": 5316740,
+    "pyth": "0x9674e2F58485B987d7d537a059FB002aE1d44959",
+    "pythStartBlock": 5316970
+  }
