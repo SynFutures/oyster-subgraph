@@ -2,13 +2,13 @@
     "network": "gelato-testnet",
     "wrappedNativeToken": "0xDA7B4378FF634b35646F93400B56c65a0Cc39C69",
     "config": "0x8ECD41c08885071918fD06c977D85Ef40c795487",
-    "configStartBlock": 590,
+    "configStartBlock": 592,
     "gate": "0x80a897Bce75898416F5741cc454fDA43F7079F94",
-    "gateStartBlock": 590,
+    "gateStartBlock": 594,
     "guardian": "0x1F1A3D37532ADc9bCA966E9660C0878a0159B0EF",
-    "guardianStartBlock": 590,
+    "guardianStartBlock": 591,
     "emg": "0x59B023aD0D12DAfF938675f57f22D5F3D1A93664",
-    "emgStartBlock": 590,
+    "emgStartBlock": 613,
     "pyth": "0xA550d13E88aA12C2A83a7A74081de958AAE0F0cd",
-    "pythStartBlock": 590
+    "pythStartBlock": 618
   }
