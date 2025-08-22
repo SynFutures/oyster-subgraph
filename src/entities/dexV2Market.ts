@@ -2,7 +2,7 @@
 import { Address } from '@graphprotocol/graph-ts';
 import { DexV2Feeder, DexV2Market } from '../../generated/schema';
 import { DEXV2, ZERO, ZERO_ADDRESS } from '../const';
-import { getCompactEmaParam, getFeederTypeStr } from '../utils/common';
+import { getFeederTypeStr } from '../utils/common';
 import { DexV2MarketContract } from '../../generated/templates';
 import { SetMarketInfo } from '../../generated/Config/Config';
 import { SetFeederFeederStruct } from '../../generated/Config/DexV2Market';
@@ -14,7 +14,6 @@ export function loadOrNewDexV2Market(market: Address): DexV2Market {
         dexV2Market = new DexV2Market(market.toHexString());
         dexV2Market.type = DEXV2;
         dexV2Market.beacon = ZERO_ADDRESS;
-        dexV2Market.compactEmaParam = getCompactEmaParam(DEXV2, market);
         dexV2Market.save();
         // first created, we need to listen events on this market
         DexV2MarketContract.create(market);

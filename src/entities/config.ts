@@ -49,7 +49,6 @@ export function loadOrNewQuoteParam(quote: Address): QuoteParam {
         quoteParam = new QuoteParam(quote.toHexString());
         quoteParam.quote = quote.toHexString();
         quoteParam.tradingFeeRatio = BigInt.fromI32(p.tradingFeeRatio);
-        quoteParam.stabilityFeeRatioParam = p.stabilityFeeRatioParam;
         quoteParam.protocolFeeRatio = BigInt.fromI32(p.protocolFeeRatio);
         quoteParam.minMarginAmount = p.minMarginAmount;
         quoteParam.tip = p.tip;
@@ -63,7 +62,6 @@ export function updateQuoteParam(quoteAddr: Address, param: SetQuoteParamParamSt
     let quoteParam = loadOrNewQuoteParam(quoteAddr);
     quoteParam.quote = quoteAddr.toHexString();
     quoteParam.tradingFeeRatio = BigInt.fromI32(param.tradingFeeRatio);
-    quoteParam.stabilityFeeRatioParam = param.stabilityFeeRatioParam;
     quoteParam.protocolFeeRatio = BigInt.fromI32(param.protocolFeeRatio);
     quoteParam.minMarginAmount = param.minMarginAmount;
     quoteParam.tip = param.tip;

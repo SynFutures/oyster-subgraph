@@ -75,7 +75,6 @@ export function loadOrNewInstrumentSetting(instrument: Address, quote: Address):
         instrumentSetting.instrument = instrument.toHexString();
         instrumentSetting.quote = quote.toHexString();
         instrumentSetting.tradingFeeRatio = quoteParam.tradingFeeRatio;
-        instrumentSetting.stabilityFeeRatioParam = quoteParam.stabilityFeeRatioParam;
         instrumentSetting.protocolFeeRatio = quoteParam.protocolFeeRatio;
         instrumentSetting.minMarginAmount = quoteParam.minMarginAmount;
         instrumentSetting.tip = quoteParam.tip;
