@@ -23,11 +23,11 @@ dataSources:
         - name: DexV2Market
           file: ./abis/DexV2Market.json
         - name: CexMarket
-          file: ./abis/CexMarket.json     
+          file: ./abis/CexMarket.json
       eventHandlers:
         - event: SetMarketInfo(string,address,address)
           handler: handleSetMarketInfo
-        - event: SetQuoteParam(address,(uint128,uint16,uint16,uint64,uint8,uint128))
+        - event: SetQuoteParam(address,(uint128,uint16,uint16,uint8,uint128))
           handler: handleSetQuoteParam
       file: ./src/mappings/config.ts
   - kind: ethereum
@@ -52,11 +52,11 @@ dataSources:
           file: ./abis/Config.json
       eventHandlers:
         - event: NewInstrument(bytes32,address,address,address,string,uint256)
-          handler: handleNewInstrument      
+          handler: handleNewInstrument
         - event: Gather(indexed address,indexed address,indexed address,uint32,uint256)
           handler: handleGather
         - event: Scatter(indexed address,indexed address,indexed address,uint32,uint256)
-          handler: handleScatter      
+          handler: handleScatter
         - event: Deposit(indexed address,indexed address,uint256)
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,uint256)
@@ -177,7 +177,7 @@ templates:
         - event: Liquidate(indexed uint32,indexed address,uint256,uint256,address,int256)
           handler: handleLiquidate
         - event: Place(indexed uint32,indexed address,int24,uint32,(uint128,int128))
-          handler: handlePlace           
+          handler: handlePlace
         - event: RecycleInsuranceFund(indexed uint32,uint256)
           handler: handleRecycleInsuranceFund
         - event: Remove(indexed uint32,indexed address,int24,int24,uint256,(int256,int256,uint256,uint256,int256),address,uint256)
@@ -198,14 +198,14 @@ templates:
           handler: handleUpdateFundingIndex
         - event: UpdateMarginRatio(uint16,uint16)
           handler: handleUpdateMarginRatio
-        - event: UpdateParam((uint128,uint16,uint16,uint64,uint8,uint128))
+        - event: UpdateParam((uint128,uint16,uint16,uint8,uint128))
           handler: handleUpdateParam
         - event: UpdatePosition(indexed uint32,indexed address,(int256,int256,uint256,uint256,int256))
           handler: handleUpdatePosition
         - event: UpdateSocialLossInsuranceFund(indexed uint32,uint128,uint128,uint128)
           handler: handleUpdateSocialLossInsuranceFund
         - event: WithdrawRangeFee(indexed uint32,indexed address,uint48,uint256,address,(uint128,uint128,uint96,uint160))
-          handler: handleWithdrawRangeFee          
+          handler: handleWithdrawRangeFee
   - kind: ethereum
     name: DexV2MarketContract
     network: {{network}}
@@ -215,7 +215,7 @@ templates:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/mappings/dexV2Market.ts      
+      file: ./src/mappings/dexV2Market.ts
       entities:
         - DexV2Market
         - DexV2Feeder
@@ -227,8 +227,6 @@ templates:
       eventHandlers:
         - event: SetFeeder(indexed address,(uint8,bool,address,uint64,uint64))
           handler: handleSetDexV2Feeder
-        - event: SetCompactEmaParam(uint256)
-          handler: handleSetCompactEmaParam
   - kind: ethereum
     name: CexMarketContract
     network: {{network}}
@@ -249,6 +247,4 @@ templates:
       eventHandlers:
         - event: SetFeeder(indexed address,(uint8,uint64,address,uint24,uint64,address,uint24))
           handler: handleSetCexFeeder
-        - event: SetCompactEmaParam(uint256)
-          handler: handleSetCompactEmaParam
       file: ./src/mappings/cexMarket.ts

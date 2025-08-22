@@ -101,14 +101,6 @@ export function getMarketAddress(type: string): Address {
     return info.market;
 }
 
-export function getCompactEmaParam(marketType: string, marketAddr: Address): BigInt {
-    if (marketType === DEXV2) {
-        return DexV2MarketContract.bind(marketAddr).getCompactEmaParam();
-    } else {
-        return CexMarketContract.bind(marketAddr).getCompactEmaParam();
-    }
-}
-
 export function getQuoteParam(quoteAddr: Address): Config__getQuoteParamResultValue0Struct {
     let config = Config.load(ZERO_ADDRESS_STR);
     let contract = ConfigContract.bind(Address.fromBytes(config!.address));

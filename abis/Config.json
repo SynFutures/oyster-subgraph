@@ -69,8 +69,21 @@
   },
   {
     "anonymous": false,
-    "inputs": [],
-    "name": "DisableLpWhitelist",
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "restricted",
+        "type": "bool"
+      }
+    ],
+    "name": "EnableLpWhitelistForQuote",
     "type": "event"
   },
   {
@@ -117,6 +130,12 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "user",
         "type": "address"
       },
@@ -127,7 +146,7 @@
         "type": "bool"
       }
     ],
-    "name": "SetLpWhitelist",
+    "name": "SetLpWhitelistForQuote",
     "type": "event"
   },
   {
@@ -182,11 +201,6 @@
             "type": "uint16"
           },
           {
-            "internalType": "uint64",
-            "name": "stabilityFeeRatioParam",
-            "type": "uint64"
-          },
-          {
             "internalType": "enum QuoteType",
             "name": "qtype",
             "type": "uint8"
@@ -214,10 +228,34 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "disableLpWhitelist",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "enable",
+        "type": "bool"
+      }
+    ],
+    "name": "enableLpWhitelistForQuote",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllMarkets",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -284,11 +322,6 @@
             "type": "uint16"
           },
           {
-            "internalType": "uint64",
-            "name": "stabilityFeeRatioParam",
-            "type": "uint64"
-          },
-          {
             "internalType": "enum QuoteType",
             "name": "qtype",
             "type": "uint8"
@@ -330,6 +363,11 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "user",
         "type": "address"
       }
@@ -368,6 +406,11 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "user",
         "type": "address"
       }
@@ -384,13 +427,19 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "openLiquidator",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "markets",
     "outputs": [
       {
-        "internalType": "bool",
+        "internalType": "address",
         "name": "",
-        "type": "bool"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -398,7 +447,20 @@
   },
   {
     "inputs": [],
-    "name": "openLp",
+    "name": "marketsLength",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "openLiquidator",
     "outputs": [
       {
         "internalType": "bool",
@@ -425,6 +487,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      }
+    ],
+    "name": "restrictLp",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "restricted",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "users",
         "type": "address[]"
@@ -442,6 +523,11 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "quotes",
+        "type": "address[]"
+      },
       {
         "internalType": "address[]",
         "name": "users",
@@ -504,11 +590,6 @@
             "internalType": "uint16",
             "name": "protocolFeeRatio",
             "type": "uint16"
-          },
-          {
-            "internalType": "uint64",
-            "name": "stabilityFeeRatioParam",
-            "type": "uint64"
           },
           {
             "internalType": "enum QuoteType",

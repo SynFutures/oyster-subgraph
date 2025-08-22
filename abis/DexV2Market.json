@@ -1,23 +1,19 @@
 [
   {
-    "inputs": [],
-    "name": "BadEmaHalfTime",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "BadMaxChangeRatioPerSecond",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "BadMaxRawTimeDelta",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "BadMaxTimeDelta",
-    "type": "error"
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_config",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_gate",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
     "inputs": [],
@@ -73,11 +69,6 @@
   },
   {
     "inputs": [],
-    "name": "NotConverge",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "NotGate",
     "type": "error"
   },
@@ -119,25 +110,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "instrument",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint32",
-        "name": "expiry",
-        "type": "uint32"
-      }
-    ],
-    "name": "ClearStates",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": false,
         "internalType": "uint8",
         "name": "version",
@@ -145,19 +117,6 @@
       }
     ],
     "name": "Initialized",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "compactEmaParam",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetCompactEmaParam",
     "type": "event"
   },
   {
@@ -246,83 +205,6 @@
       }
     ],
     "name": "UpdateAccState",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "instrument",
-        "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint16",
-            "name": "emaHalfTime",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint16",
-            "name": "maxTimeDelta",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint16",
-            "name": "maxRawTimeDelta",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint16",
-            "name": "maxChangeRatioPerSecond",
-            "type": "uint16"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct EmaParam",
-        "name": "emaParam",
-        "type": "tuple"
-      }
-    ],
-    "name": "UpdateEmaParam",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "instrument",
-        "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint32",
-            "name": "time",
-            "type": "uint32"
-          },
-          {
-            "internalType": "uint224",
-            "name": "spot",
-            "type": "uint224"
-          },
-          {
-            "internalType": "uint256",
-            "name": "raw",
-            "type": "uint256"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct SpotState",
-        "name": "spotState",
-        "type": "tuple"
-      }
-    ],
-    "name": "UpdateSpotState",
     "type": "event"
   },
   {
@@ -458,6 +340,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getAllInstruments",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -483,66 +378,12 @@
   },
   {
     "inputs": [],
-    "name": "getCompactEmaParam",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "getDexV2Factories",
     "outputs": [
       {
         "internalType": "address[]",
         "name": "",
         "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "instrument",
-        "type": "address"
-      }
-    ],
-    "name": "getEmaParam",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint16",
-            "name": "emaHalfTime",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint16",
-            "name": "maxTimeDelta",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint16",
-            "name": "maxRawTimeDelta",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint16",
-            "name": "maxChangeRatioPerSecond",
-            "type": "uint16"
-          }
-        ],
-        "internalType": "struct EmaParam",
-        "name": "",
-        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -598,25 +439,6 @@
         "type": "address"
       }
     ],
-    "name": "getRawPrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "raw",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "instrument",
-        "type": "address"
-      }
-    ],
     "name": "getSpotPrice",
     "outputs": [
       {
@@ -631,80 +453,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "instrument",
-        "type": "address"
-      }
-    ],
-    "name": "getSpotState",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint32",
-            "name": "time",
-            "type": "uint32"
-          },
-          {
-            "internalType": "uint224",
-            "name": "spot",
-            "type": "uint224"
-          },
-          {
-            "internalType": "uint256",
-            "name": "raw",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct SpotState",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_config",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_gate",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_compactEmaParam",
-        "type": "uint256"
-      }
-    ],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_config",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_gate",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_emaParam",
-        "type": "uint256"
-      },
-      {
         "internalType": "address[]",
         "name": "_factories",
         "type": "address[]"
@@ -713,6 +461,38 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "instruments",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "instrumentsLength",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -770,32 +550,6 @@
         "type": "bytes"
       }
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "newCompactEmaParam",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCompactEmaParam",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "enum Leverage",
-        "name": "leverage",
-        "type": "uint8"
-      }
-    ],
-    "name": "syncEmaParam",
-    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },

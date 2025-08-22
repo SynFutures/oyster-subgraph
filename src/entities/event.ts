@@ -982,7 +982,6 @@ export function createUpdateParamEvent(event: UpdateParam): UpdateParamEvent {
 
     entity.quote = instrument.quote;
     entity.tradingFeeRatio = BigInt.fromI32(event.params.param.tradingFeeRatio);
-    entity.stabilityFeeRatioParam = event.params.param.stabilityFeeRatioParam;
     entity.protocolFeeRatio = BigInt.fromI32(event.params.param.protocolFeeRatio);
     entity.minMarginAmount = event.params.param.minMarginAmount;
     entity.tip = event.params.param.tip;

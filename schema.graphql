@@ -80,13 +80,12 @@ type QuoteParam @entity {
 
     tradingFeeRatio: BigInt!
     protocolFeeRatio: BigInt!
-    stabilityFeeRatioParam: BigInt!
     qtype: QuoteType!
 
     tip: BigInt!
 }
 
-# Instrument setting 
+# Instrument setting
 type InstrumentSetting @entity {
     id: ID!                         # ${instrumentId}
 
@@ -100,7 +99,6 @@ type InstrumentSetting @entity {
     minMarginAmount: BigInt!
     tradingFeeRatio: BigInt!
     protocolFeeRatio: BigInt!
-    stabilityFeeRatioParam: BigInt!
     qtype: QuoteType!
 
     tip: BigInt!
@@ -111,7 +109,6 @@ type CexMarket @entity {
     type: String!
     beacon: Bytes!
 
-    compactEmaParam: BigInt        # compact ema param
     feederList: [CexFeeder!] @derivedFrom(field: "market")
     instrumentList: [Instrument!] @derivedFrom(field: "cexMarket")
 }
@@ -121,7 +118,6 @@ type DexV2Market @entity {
     type: String!
     beacon: Bytes!
 
-    compactEmaParam: BigInt        # compact ema param
     feederList: [DexV2Feeder!] @derivedFrom(field: "market")
     instrumentList: [Instrument!] @derivedFrom(field: "dexV2Market")
 }
@@ -439,7 +435,7 @@ type DailyAmmData @entity {
     baseVolume: BigInt!             # daily base volume
     volume: BigInt!                 # daily volume
     poolFee: BigInt!                # daily pool fee
-    liquidityFee: BigInt!           # daily liquidity fee    
+    liquidityFee: BigInt!           # daily liquidity fee
     protocolFee: BigInt!            # daily protocol fee
 
     open: BigInt!                   # OHLC
@@ -463,7 +459,7 @@ type HourlyAmmData @entity {
     baseVolume: BigInt!             # hourly base volume
     volume: BigInt!                 # hourly volume
     poolFee: BigInt!                # hourly pool fee
-    liquidityFee: BigInt!           # hourly liquidity fee    
+    liquidityFee: BigInt!           # hourly liquidity fee
     protocolFee: BigInt!            # hourly protocol fee
 
     open: BigInt!                   # OHLC
@@ -539,7 +535,7 @@ type DailyUserQuoteData @entity {
 }
 
 type VirtualTrade @entity {
-    id: ID!                         # transactionHash-logIndex-${type} 
+    id: ID!                         # transactionHash-logIndex-${type}
     trader: Bytes!
     amm: Amm!
     timestamp: BigInt!
@@ -1034,13 +1030,12 @@ type UpdateParamEvent @entity {
     minMarginAmount: BigInt!
     tradingFeeRatio: BigInt!
     protocolFeeRatio: BigInt!
-    stabilityFeeRatioParam: BigInt!
     qtype: QuoteType!
 
     tip: BigInt!
 }
 
-# event DeleteContext(uint32 indexed expiry); 
+# event DeleteContext(uint32 indexed expiry);
 type DeleteContextEvent @entity {
     id: ID!                         # txid-logIndex
     logIndex: Int!

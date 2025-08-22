@@ -12,6 +12,8 @@ export let ZERO_ADDRESS = Address.fromString(ZERO_ADDRESS_STR);
 export const DEXV2 = 'DEXV2';
 
 export let MASK_128 = BigInt.fromI32(2).pow(128).minus(BigInt.fromI32(1));
+export let MASK_24 = BigInt.fromI32(2).pow(24).minus(BigInt.fromI32(1));
+
 export let ZERO = BigInt.fromI32(0);
 export let ONE = BigInt.fromI32(1);
 export let TWO = BigInt.fromI32(2);
@@ -19,6 +21,7 @@ export let WAD = BigInt.fromI32(10).pow(18);
 export let NEG_ONE = BigInt.fromI32(-1);
 
 export let MAX_INT_128 = ONE.leftShift(127).minus(ONE);
+export let MAX_INT_24 = ONE.leftShift(23).minus(ONE);
 
 export let PERP_EXPIRY = BigInt.fromI32(2).pow(32).minus(BigInt.fromI32(1));
 

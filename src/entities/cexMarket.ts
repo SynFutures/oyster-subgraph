@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 import { Address } from '@graphprotocol/graph-ts';
 import { ZERO, ZERO_ADDRESS } from '../const';
-import { getCompactEmaParam, getFeederTypeStr } from '../utils/common';
+import { getFeederTypeStr } from '../utils/common';
 import { CexFeeder, CexMarket } from '../../generated/schema';
 import { SetMarketInfo } from '../../generated/Config/Config';
 import { SetFeederFeederStruct } from '../../generated/Config/CexMarket';
@@ -13,7 +13,6 @@ export function loadOrNewCexMarket(market: Address, type: string): CexMarket {
         cexMarket = new CexMarket(market.toHexString());
         cexMarket.type = type;
         cexMarket.beacon = ZERO_ADDRESS;
-        cexMarket.compactEmaParam = getCompactEmaParam(type, market);
         cexMarket.save();
         // first created, we need to listen events on this market
         CexMarketContract.create(market);

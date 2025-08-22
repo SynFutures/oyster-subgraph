@@ -470,7 +470,6 @@ export function handleUpdateParam(event: UpdateParam): void {
     let instrumentSetting = loadOrNewInstrumentSetting(event.address, Address.fromString(quoteAddr));
     instrumentSetting.quote = quoteAddr;
     instrumentSetting.tradingFeeRatio = BigInt.fromI32(event.params.param.tradingFeeRatio);
-    instrumentSetting.stabilityFeeRatioParam = event.params.param.stabilityFeeRatioParam;
     instrumentSetting.protocolFeeRatio = BigInt.fromI32(event.params.param.protocolFeeRatio);
     instrumentSetting.minMarginAmount = event.params.param.minMarginAmount;
     instrumentSetting.tip = event.params.param.tip;
