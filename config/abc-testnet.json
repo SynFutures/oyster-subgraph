@@ -1,0 +1,14 @@
+{
+    "network": "abc-testnet",
+    "wrappedNativeToken": "0xd7d13F2D4EBC0E43fa65bB16e831eB2068a2f4ae",
+    "config": "0xdfBA572929De47838BdE12336dfE8842B06d9628",
+    "configStartBlock": 202,
+    "gate": "0x22C05a9E9B2a0094e278153CED02B8617A0b00fE",
+    "gateStartBlock": 205,
+    "guardian": "0x544d56774E7cD11CD1986Dc00831DB567B7Eabb9",
+    "guardianStartBlock": 200,
+    "emg": "0x118ac15F71aca60dd0478B66B8b586e83aB3e9cA",
+    "emgStartBlock": 224,
+    "pyth": "0x7e42465dfE75Ae916ad4C48bBAF92d12CAfcD98a",
+    "pythStartBlock": 230
+  }
